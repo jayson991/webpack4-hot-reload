@@ -1,14 +1,21 @@
 {
   "presets": [
     [
-      "env",
+      "@babel/preset-env",
       {
+        "corejs": 3,
+        "useBuiltIns": "usage",
+        "debug": false,
         "targets": {
           "browsers": ["last 2 versions"]
-        },
-        "debug": false
+        }
       }
     ]
   ],
-  "plugins": ["transform-runtime"]
+  "plugins": [
+    "@babel/plugin-transform-runtime",
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-proposal-export-default-from"
+  ]
 }
+

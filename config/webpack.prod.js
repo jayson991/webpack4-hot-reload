@@ -1,26 +1,22 @@
 const path = require('path')
-const webpack = require('webpack')
-const ESLintPlugin = require('eslint-webpack-plugin')
-const HTMLWebpackPlugin = require('html-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const CompressionWebpackPlugin = require('compression-webpack-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin')
+
+const productionGzipExtensions = [ 'js', 'css' ]
 
 module.exports = {
-  mode: 'development',
+  mode: 'production',
   entry: {
     main: path.resolve(__dirname, '../src/index.js'),
   },
   output: {
     publicPath: '/',
-    filename: '[name]-bundle.js',
+    filename: 'scripts/[name].[contenthash:8].js',
     path: path.resolve(__dirname, '../dist'),
-  },
-  devServer: {
-    hot: true,
-    open: true,
-    overlay: true,
-    stats: {
-      colors: true,
-    },
-    contentBase: path.join(__dirname, 'dist'),
   },
   resolve: {
     extensions: [ '.js' ],
@@ -42,7 +38,7 @@ module.exports = {
       {
         test: /\.s?css$/,
         use: [
-          'style-loader',
+          MiniCssExtractPlugin.loader,
           {
             loader: 'css-loader',
             options: {
@@ -87,10 +83,49 @@ module.exports = {
     ],
   },
   plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-    new ESLintPlugin(),
-    new HTMLWebpackPlugin({
-      template: './src/index.html',
+    new CleanWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      inject: true,
+      template: path.resolve(__dirname, '../src/index.html')
     }),
+    new MiniCssExtractPlugin({
+      filename: 'styles/[name].[contenthash:8].css'
+    }),
+    new CompressionWebpackPlugin({
+      filename: '[path][name].gz[query]',
+      algorithm: 'gzip',
+      test: new RegExp('\\.(' + productionGzipExtensions.join('|') + ')$'),
+      threshold: 10240,
+      minRatio: 0.8
+    })
   ],
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      minChunks: 2,
+      maxInitialRequests: 5,
+      cacheGroups: {
+        commons: {
+          chunks: 'all',
+          test: /[\\/]node_modules[\\/]/,
+          minChunks: 2,
+          maxInitialRequests: 5,
+          minSize: 0,
+          name: 'common'
+        }
+      }
+    },
+    minimizer: [
+      new OptimizeCSSAssetsPlugin({
+        cssProcessorOptions: {
+          map: {
+            inline: false
+          }
+        }
+      }),
+      new TerserPlugin({
+        sourceMap: false
+      })
+    ]
+  }
 }

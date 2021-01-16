@@ -1,4 +1,5 @@
 const path = require('path')
+const env = require('./env.dev')
 const webpack = require('webpack')
 const ESLintPlugin = require('eslint-webpack-plugin')
 const HTMLWebpackPlugin = require('html-webpack-plugin')
@@ -87,6 +88,10 @@ module.exports = {
     ],
   },
   plugins: [
+    new webpack.DefinePlugin({
+      'process.env': env,
+      NODE_ENV: env.NODE_ENV
+    }),
     new webpack.HotModuleReplacementPlugin(),
     new ESLintPlugin(),
     new HTMLWebpackPlugin({

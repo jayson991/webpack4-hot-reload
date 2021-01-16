@@ -1,4 +1,6 @@
 const path = require('path')
+const env = require('./env.prod')
+const webpack = require('webpack')
 const TerserPlugin = require('terser-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
@@ -83,6 +85,10 @@ module.exports = {
     ],
   },
   plugins: [
+    new webpack.DefinePlugin({
+      'process.env': env,
+      NODE_ENV: env.NODE_ENV
+    }),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       inject: true,
